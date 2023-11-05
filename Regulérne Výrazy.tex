@@ -1,0 +1,421 @@
+% Metódy inžinierskej práce - Rámcová téma
+
+\documentclass[10pt,twoside,slovak,a4paper]{article}
+
+\usepackage[slovak]{babel}
+\usepackage[IL2]{fontenc} % lepšia sadzba písmena Ľ než v T1
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{url} % príkaz \url na formátovanie URL
+\usepackage{hyperref} % odkazy v texte budú aktívne (pri niektorých triedach dokumentov spôsobuje posun textu)
+\usepackage{cite}
+%\usepackage{times}
+\usepackage{csquotes}
+\usepackage{tabularray}
+\usepackage{blindtext}
+\usepackage{titlesec}
+\usepackage{booktabs}
+
+\pagestyle{headings}
+
+\title{Regulérne Výrazy\thanks{Semestrálny projekt v predmete Metódy inžinierskej práce, ak. rok 2023/24, vedenie: Ing. Ivan Kapustík}} % meno a priezvisko vyučujúceho na cvičeniach
+
+\author{Tomáš Tytykalo\\[2pt]
+	{\small Slovenská technická univerzita v Bratislave}\\
+	{\small Fakulta informatiky a informačných technológií}\\
+	{\small \texttt{xtytykalo@stuba.sk}}
+	}
+
+\date{\small 8. október 2023} % upravte
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+Článok sa zameriava na aplikáciu regulérnych výrazov v oblasti informatiky a textového spracovania. Regulérne výrazy poskytujú používateľsky jednoduchý a efektívny spôsob vyhľadávania a manipuláciu textových dát.
+Táto práca začína popisom základov regulérnych výrazov, vrátane ich syntaxe a operácií. Následne sa zameriavame na ich použitie v rôznych kontextoch, vrátane bežného využitia v praxi a teda aj v množstve bežne dostupných programov, alebo programovacích jazykoch.
+Predstavíme si v ktorých situáciách sa dajú efektívne a jednoducho aplikovať. Regulérne výrazy sú teda mocným nástrojom pre každého dobrého informatika, či programátora.
+
+\end{abstract}
+
+\clearpage
+\tableofcontents
+\clearpage
+
+\section{Úvod}
+Regulérne výrazy, taktiež známe ako RegEx, či RegExp (Regular Expression) sú populárne a husto podporované v programoch, kde majú zmysel. Ako napríklad textové editory.
+
+Regulérne výrazy predstavujú jednoduchý a efektívny spôsob vyhladávania v textových reťazcoch. Ich aplikácia zahŕňa extrakcia informácií, overovanie uživateľského vstupu, alebo aj nahrádzanie textu. 
+
+Hlavné využitie má v programovacích a skriptovacích ako napríklad JavaScript, PHP, Python ale taktiež aj v kope iných typu C++, C\#. Ich podporu nachádzame bežne v textových editoroch ako nástroj na vyhladávanie a nahrádzanie.
+
+Prejdeme si ich zápis, funkcionalitu, využitie v programoch, a aj v programovacích jazykoch.
+
+Výborný papier na túto tému je \cite{Sanjiv}. Obsahuje podobný obsah, ale s inými príkladmi a iným vysvetlením. V prípade zložitosti tohoto papiera alebo vzniknutých nejasností ho doporučujem skontrolovať.
+
+\section{Zápis regulérnych výrazov}
+Pre túto sekciu sme čerpali informácie z publikácie \cite{RegEx_Basics}. Je to podobný papier tejto sekcií s rozdielom že sa aj zaoberá linuxovým prostredím, ktorý sme mi nespomenuli.
+Taktiež papier \cite{RegEx_Usage} obsahuje podrobnejšie informácie ohľadom implementácie samotných regulérnych výrazov, ktorá tu tiež nie je spomenutá aby sme nekomplikovali jednoduchosť tohoto papiera.
+
+\subsection{Základné regulérne výrazy}
+Jednoduchý regulérny výraz môže vyzerať následovne:
+\begin{verbatim}
+/Auto/g
+\end{verbatim}
+Tento výraz nájde všetky prípady 'Auto' v celom textovom reťazci. Poďme si ich ale rozobrať trošku hlbšie. Všetko medzi dvoma // je formát vyhľadávania, teda to čo nás teraz zaujíma. Všetko vonku // je modifikátor, k týmto sa dostaneme neskôr.
+
+\subsubsection{Rozsah}
+Výrazy typu hladania jedného reťazca sú pomerne jednoduché. Napíšeme iba vyhľadávaný reťazec, tak ako v predošlom príklade.
+\begin{verbatim}
+Výraz:	/Auto/g
+Vyberie:	Auto
+\end{verbatim}
+Výraz nám teda nájde všetky 'Auto' v texte, ale čo keď chceme aj "auto" s malým písmenkom na začiatku?
+V tomto prípade prichádza prvý koncept menom \emph{rozsah}. Zapisuje sa do hranatých zátvoriek.
+Rozsahy môžeme aj negovať pomocou operátora \string^, aby sme vybrali všetky znaky okrem tých v rozsahu.
+
+\begin{verbatim}
+Výraz:	/[aA]uto/g
+Vyberie:	auto Auto
+\end{verbatim}
+Teraz náš výraz vyberie 'auto' aj 'Auto' z textu, lebo sme v rozsahu pre prvé písmenko špecifikovaly \emph{malé} a aj \emph{veľké} a.
+Ak by sme chceli vybrať všelijaké veľké a malé písmenko, tak rozsah zapíšeme s '-' ako interval.
+
+\begin{verbatim}
+Výraz: 	/[a-zA-z]uto/g
+Vyberie: 	auto Auto xuto puto
+\end{verbatim}
+Tento výraz vyberie všetky prípady, kde je ľubovolné písmenko a za ním 'uto'.
+
+\begin{verbatim}
+Výraz: 	/[^a-zA-z]uto/g
+Vyberie: 	0uto 1uto $uto !uto
+\end{verbatim}
+Výraz vyberie reťazce s lubovoľným znakon okrem písmen a s 'uto'.
+
+\subsubsection{Kvantifikátory}
+Začneme opäť s jednoduchím výrazom pre 'Auto'.
+\begin{verbatim}
+Výraz:	/Auto/g
+Vyberie:	Auto
+\end{verbatim}
+Ako by sme vybrali opakujúce sa znaky, alebo písmena, ktoré tam môže a nemusia byť?
+Máme na to následujúci špeciálne znaky určené pre kvantifikáciu. Tieto operátory sa aplikujú na jednotlivé znaky, ale môžu aj na rozsahy a skupiny.
+
+\begin{table}
+\centering
+\begin{tabular}{|l|l|} 
+\hline
+\textbf{Operátor} & \textbf{Popis}                                  \\ 
+\hline
++                 & musí byť aspoň raz, ale môže viac krát          \\ 
+\hline
+?                 & môže a nemusí tam byť                           \\ 
+\hline
+*                 & môže byť 0-krát alebo viac krát                 \\ 
+\hline
+\{min, max\}      & vyskytuje sa aspoň min-krát a najviac max-krát  \\
+\hline
+\end{tabular}
+\caption{RegEx Kvantifikátory}
+\end{table}
+
+\begin{itemize}
+\item
+\begin{verbatim}
+Výraz:	/A+uto/g
+Vyberie:	AAuto Auto AAAAAAAAAAuto
+\end{verbatim}
+\item
+\begin{verbatim}
+Výraz:	/A?uto/g
+Vyberie:	Auto uto
+\end{verbatim}
+\item
+\begin{verbatim}
+Výraz:	/A*uto/g
+Vyberie:	AAuto Auto AAAAAAAAAAuto uto
+\end{verbatim}
+\item
+\begin{verbatim}
+Výraz:	/[Aa]{3,3}uto/g
+Vyberie:	AAAuto AAauto Aaauto aaauto
+\end{verbatim}
+\end{itemize}
+
+\subsection{Špeciálne znaky a skupiny znakov}
+\begin{verbatim}
+Výraz:	/Auto/g
+Vyberie:	Auto
+\end{verbatim}
+
+Dokážeme už vybrať všetky vopred známe znaky a prípadne ich opakovanie. A čo keď nevieme aký znak bude prvý? Alebo ak sa nám nechce vypisovať každé písmenko abecedy a všetky známe znaky. Našťastie nemusíme, tvorcovia regulérnych výrazov na to mysleli.
+Medzi takéto špeciálne znaky a skupiny znakov patrí.
+
+\begin{table}[!ht]
+	\centering
+	 \begin{tabular}{|l|l|l|}
+	\hline
+		\textbf{Znak / Znaková skupina} & \textbf{Slovný popis} & \textbf{Rozsah} ~ \\ \hline
+	        . & lubovolný znak okrem nového riadku '$\backslash$n' & ~ \\ \hline
+        	\string^ & začiatok reťazca & ~ \\ \hline
+        	\$ & koniec reťazca & ~ \\ \hline
+	        $\backslash$s & všetky 'whitespace' znaky & [ $\backslash$f$\backslash$n$\backslash$r	$\backslash$v] \\ \hline
+        	$\backslash$S & všetko okrem 'whitespace' znakov & [\string^ $\backslash$f$\backslash$n$\backslash$r$\backslash$t$\backslash$v] \\ \hline
+	        $\backslash$w & všetky znaky slov & [a-zA-Z0-9\_] \\ \hline
+	        $\backslash$W & všetko okrem znakov slov & [\string^a-zA-Z0-9\_] \\ \hline
+        	$\backslash$d & všetky číslice & [0-9] \\ \hline
+        	$\backslash$D & všetko okrem číslic & [\^0-9] \\ \hline
+	\end{tabular}
+	\caption{Špeciálne znaky a znakové skupiny}
+\end{table}
+
+\subsubsection{Skupiny}
+Skupiny slúžia na segmentáciu nášho vyhladávania alebo pridávania podmienok.
+Tieto skupiny sú nápomocné pri programovaní, kde môžeme k jednotlivým skupinám pristupovať podľa pomenovania.
+Taktiež ich môžeme použiť na nájdenie reťazca, ktorý nechceme vo finále vybrať ako napríklad pri práci s CSV (Comma Seperated Values) súbormi, kde jednotlivé záznamy sú zakončené čiarkou, ale nechceme vybrať čiarku.
+
+\begin{verbatim}
+Vstup: 	 Name,Email,Phone Number,Address
+Výraz:	/[^,\n]+(?=[,\n]?)/g
+Vyberie:	'Name', 'Email', 'Phone Number', 'Address'
+\end{verbatim}
+Tento výraz vyberá záznamy z CSV zoznamu hodnôt a teda vyberá všetko pokiaľ nenájde čiarku, alebo nový riadok.
+Je možné tento výraz vylepšiť aby ignoroval medzeri na začiatku zápisu, alebo aby mohla byť čiarka v zázname, ale to necháme ako príklad čitateľovi.
+
+Skupinu dokážeme nastaviť tak, aby sme ju nezahŕňali do výsledkov. Taktiež ich dokážeme použiť ako podmienku a vyhodnotiť podľa toho či náš reťazec uložiť, alebo preskočil.
+
+\begin{table}
+\centering
+\caption{RegEx Skupiny}
+\begin{tabular}{|l|l|} 
+\hline
+\textbf{Zápis}     & \textbf{Popis}                                                 \\ 
+\hline
+(x)                & Zachytávacia skupina                                           \\ 
+\hline
+(?Názov\_Skupinyx) & Pomenovaná skupina                                             \\ 
+\hline
+(?:x)              & Skupina ktorú nezachytávame                                    \\ 
+\hline
+(?=x)              & Skupina, ktorá ak nie je za výrazom, tak záznam vynechávame    \\ 
+\hline
+(?!x)              & Skupina, ktorá ak je za výrazyom, tak záznam vynechávame       \\ 
+\hline
+(?=x)              & Skupina, ktorá ak nie je pred výrazom, tak záznam vynechávame  \\ 
+\hline
+(?!x)              & Skupina, ktorá ak je za výrazyom, tak záznam vynechávame       \\
+\hline
+\end{tabular}
+\end{table}
+\begin{verbatim}
+Výraz:	/[Aa]{3,3}uto/g
+Vyberie:	AAAuto AAauto Aaauto aaauto
+\end{verbatim}
+
+\subsection{Nahrádzanie}
+Prebieha s pomocou nástrojov alebo programovacieho jazyku. Doteraz sme iba vyhľadávali skupiny reťazcov, teraz môžeme do programu zadať náš regulérny výraz a dosadzovací text. Program každú nájdenú skupinu nahradí za náš text a namiesto toho aby nám vrátil všetky nájdené skupiny, tak nám dá nový text po dosadení.
+
+\begin{verbatim}
+Vstup:			'I love cats, do you love cats as well?'
+Výraz:			/cats/g
+Dosadzovací text: 	dogs
+Výsledok:			'I love dogs, do you love dogs as well?'
+\end{verbatim}
+
+\subsection{Modifikátory}
+Doposial sme menili výraz medzi //, ale konečne sa dostávame mimo lomítka.
+Tieto modifikátory dávajú informáciu programu vyhodnocujúcemu nášho regulérneho výrazu extra informácie.
+Taktiež sa nazývajú vlajky a môžu ich byť vybraných viacero.
+
+\begin{verbatim}
+Výraz:	/auto/gi
+Vyberie:	Auto auto AUto aUto
+\end{verbatim}
+
+\begin{table}[!ht]
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+        \textbf{Možnosť} & \textbf{Popis} & \textbf{Znak} \\ \hline
+        global & vyhľadáva všetky zhody namiesto iba prvej & g \\ \hline
+        case insensitive & nerozlišuje medzi veľkými a malými písmenkami & i \\ \hline
+        multiline & znak \string^ a \$ ukazujú na začiatok a koniec riadka & m \\ \hline
+        single line & znak . bude vyberať aj nový riadok '$\backslash$n' & s \\ \hline
+        unicode & pridáva možnosť používať & u \\ \hline
+        sticky & vyraz začne vyhľadávať na konci minulého vyhľadávania & y \\ \hline
+    \end{tabular}
+    \caption{RegEx modifikátory}
+\end{table}
+
+\section{Aplikácia}
+Posnažíme sa vylistovať niekoľko populárnych programov, ktoré pravdepodobne už poznáte a kde môžete uplatniť svoje nadobudnuté vedomosti.
+
+Taktiež aj zopár bežne používaných programovacích jazykoch, ktoré majú podporu pre regulérne výrazy a ukážeme si príklad využiťia v programovaciom jazyku python.
+
+\subsection{Textové editory}
+Použitie regulérnych výrazov je veľmi situaćné pri bežnej práci s textovými editormi, ale občas sa stane že potrebujeme niečo premenovať, alebo vyhladať konkrétny reťazec a naše bežné vyhladávanie s konštatným textom nestačí. 
+
+V týchto prípadoch môžeme využiť regulérne výrazy, vďaka ich užitočnosti sú pomerne často podporované.
+
+Vylistujeme si zopár textových editorov čo podporujú ich funkcionalitu a aj úroveň podpory.
+
+\begin{enumerate}
+	\item Microsoft Visual Studio Code
+	\begin{itemize}
+		\item Populárny textový editor s kompatibilitou pre väčšinu súborových formáto
+		\item Podporuje používanie regulérnych výrazov pri vyhľadávaní textu a nahrádzaní textu
+	\end{itemize}
+	\item MikText - TeXworks
+	\begin{itemize}
+		\item Integrované prostredie pre prácu s LaTeX dokumentami
+		\item Podporuje používanie regulérnych výrazov pri vyhľadávaní textu a nahrádzaní textu
+		\item Vrati celé riadky namiesto skupín
+	\end{itemize}
+	\item Microsoft Visual Studio
+	\begin{itemize}
+		\item Integrované vývojové prostriedie pre programovanie v množstve programovacích jazykoch
+		\item Podporuje používanie regulérnych výrazov pri vyhľadávaní textu a nahrádzaní textu
+	\end{itemize}
+\end{enumerate}
+
+
+\subsection{Programovacie jazyky}
+V prípade skriptovacieho jazyka Perl si môžete prečítať papier \cite{Bioperl} v ktorom autor predstavuje skriptovacií jazyk Perl a taktiež obsahuje sekciu pre regulérne výrazy.
+
+Okram skriptovacieho jazyka Perl, regulérne výrazy podpurujú aj následovné jazyky a pravdepodobne aj všetky jazyky, ktoré sa dnes bežne používajú v priemysle.
+
+\begin{enumerate}
+	\item Javascript
+	\begin{itemize}
+		\item Skriptovací jazyk s hlavným účelom pre webové stránky
+		\item Obsahuje podporu pre takmer všetky funkcie regulérnych výrazov
+		\item Funkcionalita môže závisieť od prehliadača v ktorom daný skript beží
+	\end{itemize}
+	\item Python
+	\begin{itemize}
+		\item Populárny skriptovací jazyk vhodný pre programy ktoré sú časovo nekritické
+		\item Jednoduchý pre začiatočníkov
+		\item Knižnica 're' poskytuje funkcionalitu regulérnych výrazov
+	\end{itemize}
+	\item C++
+	\begin{itemize}
+		\item Jazyk používaný v priemysle pre aplikácie, kde výkon je nutnosť
+		\item Štandarná knižnica poskytuje implementáciu regulérnych výraz
+		\item Definície funkcií sa nachádzajú v hlavičkovom súbore 'regex'
+	\end{itemize}
+\end{enumerate}
+
+\subsection{Príklady použitia}
+
+\subsubsection{Validácia vstupu používateľa}
+Nápad je pomerne jednoduchý. Napíšeme výraz, ktorý následne aplikujeme na používateľov vstup. Ak nám vráti zhodu a tá zhoda je celý vstup, tak potom je vstup platný, inak je vstup nevhodný.
+
+Platný email
+\begin{verbatim}
+Vstup:	'vsprintf@comcast.net' 'crobles@gmail.com' 'skola@is.stuba.sk' 'test@.com' 'st@gmail.com'
+Výraz:	/^\w+@\w+[\w.]+$/gm
+Vyberie:	'vsprintf@comcast.net' 'crobles@gmail.com' 'skola@is.stuba.sk'
+\end{verbatim}
+
+Telefónne číslo
+Kontroluje iba bežné čísla, čiže 112 a iné špeciálne telefónne čísla vyradí.
+
+\begin{verbatim}
+Vstup:	'+421940264961' '+421908127668' '0950279858' '0911538050' '0911 538 050' '+420 757 205 203' '948840301'
+Výraz:	/(?:\+\d{3,3}|0)(?: )?\d{3,3}(?: )?\d{3,3}(?: )?\d{3,3}/gm
+Vyberie:	'+421940264961' '+421908127668' '0950279858' '0911538050' '0911 538 050' '+420 757 205 203'
+\end{verbatim}
+
+\subsubsection{Načítavanie údajov z dátového súboru}
+
+Máme JSON súbor, v ktorom sú údaje z vozidiel MHD v Bratislave. Drží informácie ako identifikátor vozidla, liknu obsluhy, GPS pozíciu a čas aktualizácie záznamu deného vozidla. 
+
+Chceme tieto údaje spracovať programovo a teda ich najprv musíme načítať. Keďže máme zoznam vozidiel, inými slovami pole a údaje sú pomenované, tak nám regulérne výrazy podstatne uľahčia život.
+
+Nadovšetko musím dať na vedomie. Tento spôsob je pomalý a existujú lepšie spôsoby ako pracovať s JSON formátom a teda toto je iba príklad využitia.
+
+\begin{verbatim}
+Vstup:
+[
+  {
+    "vehicleNumber": 1021,
+    "lineNumber": 53,
+    "gpsLatitude": 48.177199,
+    "gpsLongitude": 17.166676,
+    "lastModified": "2023-09-22T16:40:23.1371261+02:00"
+  },
+  {
+    "vehicleNumber": 2339,
+    "lineNumber": 95,
+    "gpsLatitude": 48.190326,
+    "gpsLongitude": 17.134353,
+    "lastModified": "2022-12-22T10:34:01.96552"
+  },
+  {
+    "vehicleNumber": 7406,
+    "lineNumber": 4,
+    "gpsLatitude": 48.142004,
+    "gpsLongitude": 17.089938,
+    "lastModified": "2023-09-22T16:40:22.8595525+02:00"
+  }
+]
+Výraz: /(?<="vehicleNumber": )\d+/g
+Výstup: '1021' '2339' '7406'
+\end{verbatim}
+
+V programovacom jazyku python by to vyzeralo následovne.
+\begin{verbatim}
+import re
+
+vstup = """
+[
+  {
+    "vehicleNumber": 1021,
+    "lineNumber": 53,
+    "gpsLatitude": 48.177199,
+    "gpsLongitude": 17.166676,
+    "lastModified": "2023-09-22T16:40:23.1371261+02:00"
+  },
+  {
+    "vehicleNumber": 2339,
+    "lineNumber": 95,
+    "gpsLatitude": 48.190326,
+    "gpsLongitude": 17.134353,
+    "lastModified": "2022-12-22T10:34:01.96552"
+  },
+  {
+    "vehicleNumber": 7406,
+    "lineNumber": 4,
+    "gpsLatitude": 48.142004,
+    "gpsLongitude": 17.089938,
+    "lastModified": "2023-09-22T16:40:22.8595525+02:00"
+  }
+]"""
+
+regulerny_vyraz = re.compile('(?<="vehicleNumber": )\d+')
+vystup = re.findall(regulerny_vyraz, vstup)
+
+print(vystup) # ['1021', '2339', '7406']
+\end{verbatim}
+
+\section{Záver}
+V tomto článku sme si prešli prakticou časťou regulérnych výrazov a nie teóriou ako sú implementované. Prešli sme ich zápis, teda syntax a význam špeciálných znakov.
+Ukázali si pár ukážkových príkladov na pochopenie a vylistovali aj niekoľko prípadov, kde by sa dali využiť. Pevne verím že sme sa spoločne oboznámili s touto témou a dobre nám poslúži do budúcna pri práci ako informatici.
+
+V prípade nenaplnenej túžby pochopenia implementácie, či záujmu ako to môže fungovať, doporučujem papier \cite{RegEx_Implementation} v ktorom autor má jasný diagram a popis fungovania regulérnych výrazov.
+
+\clearpage
+\bibliography{literatura}
+\bibliographystyle{plain} % prípadne alpha, abbrv alebo hociktorý iný
+
+% https://citeseerx.ist.psu.edu/pdf/d06c81bf356235854d83b6bfe29d00eb866926a8
+% https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Cheatsheet
+% https://www.keycdn.com/support/regex-cheat-sheet
+% https://www.codeguage.com/courses/regexp/flags
+% https://www.jetbrains.com/help/go/tutorial-finding-and-replacing-text-using-regular-expressions.html
+
+% https://regexr.com/
+\end{document}
